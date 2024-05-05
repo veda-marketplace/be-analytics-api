@@ -2,128 +2,66 @@
  * Data Model Interfaces
  */
 
-import type { IdentityReq, IdentityRes } from "./identify.interface";
-
-/**
- * In-Memory Store
- */
-const identityRes: IdentityRes = {
-	ipfsHash: "",
-	ipfsUrl: "https://img.freepik.com/free-vector/hand-drawn-nft-style-ape-illustration_23-2149611030.jpg",
-	metadata: {
-		modelVersion: "string",
-		captionResult: {
-			text: "string",
-			confidence: 0.0,
-		},
-		denseCaptionsResult: {
-			values: [
-				{
-					text: "string",
-					confidence: 0.0,
-					boundingBox: {
-						x: 0,
-						y: 0,
-						w: 0,
-						h: 0,
-					},
-				},
-			],
-		},
-		metadata: {
-			width: 0,
-			height: 0,
-		},
-		tagsResult: {
-			values: [
-				{
-					name: "string",
-					confidence: 0.0,
-				},
-			],
-		},
-		objectsResult: {
-			values: [
-				{
-					id: "string",
-					boundingBox: {
-						x: 0,
-						y: 0,
-						w: 0,
-						h: 0,
-					},
-					tags: [
-						{
-							name: "string",
-							confidence: 0.0,
-						},
-					],
-				},
-			],
-		},
-		readResult: {
-			blocks: [
-				{
-					lines: [
-						{
-							text: "string",
-							boundingPolygon: [
-								{
-									x: 0,
-									y: 0,
-								},
-							],
-							words: [
-								{
-									text: "string",
-									boundingPolygon: [
-										{
-											x: 0,
-											y: 0,
-										},
-									],
-									confidence: 0.0,
-								},
-							],
-						},
-					],
-				},
-			],
-		},
-		smartCropsResult: {
-			values: [
-				{
-					aspectRatio: 0.0,
-					boundingBox: {
-						x: 0,
-						y: 0,
-						w: 0,
-						h: 0,
-					},
-				},
-			],
-		},
-		peopleResult: {
-			values: [
-				{
-					boundingBox: {
-						x: 0,
-						y: 0,
-						w: 0,
-						h: 0,
-					},
-					confidence: 0.0,
-				},
-			],
-		},
-	},
-};
+import type { IdentityRes } from "./identify.interface";
+import * as ImageSvc from '../shared/image.service';
+import * as VisionSvc from "../annotations/annotation.service";
+import { Annotations, BestGuessLabel, LabelAnnotation, Response, VisuallySimilarImage, WebEntity } from '../annotations/annotation.interfaces';
 
 /**
  * Service Methods
  */
 
-export const identify = async (url: string): Promise<IdentityRes> => {
-	const response = { ...identityRes, ipfsUrl: url };
-	return response;
+export const identify = async (ipfsHash: string): Promise<IdentityRes> => {
+	const imageContent: string = await ImageSvc.downloadImageToBytes(`https://ipfs.io/ipfs/${ipfsHash}`);
+	const annotations: Annotations = await VisionSvc.annotate(imageContent);
+	return mapAnnotations(annotations);
 };
+
+
+
+function mapAnnotations(annotations: Annotations): IdentityRes {
+	const response: Response = annotations.responses[0];
+	return {
+		label: getBestLabel(response.labelAnnotations),
+		confidence: getBestScore(response.labelAnnotations),
+		bestGuessLabels: getBestGuessLabels(response.webDetection.bestGuessLabels),
+		tags: getTags(response.webDetection.webEntities),
+		uniqueness: getUniquenessScore(response.webDetection.visuallySimilarImages)
+	};
+}
+
+function getBestScore(labelAnnotations: LabelAnnotation[]): number {
+	let score = 0;
+	for (let la of labelAnnotations) {
+		if (score < la.score) {
+			score = la.score;
+		}
+	}
+
+	return score;
+}
+
+function getBestLabel(labelAnnotations: LabelAnnotation[]): string {
+	let score = 0;
+	let label = "";
+	for (let la of labelAnnotations) {
+		if (score < la.score) {
+			score = la.score;
+			label = la.description;
+		}
+	}
+	return label;
+}
+
+function getBestGuessLabels(bestGuessLabels: BestGuessLabel[]): string[] {
+	return bestGuessLabels.map(bgl => bgl.label);
+}
+
+function getUniquenessScore(visuallySimilarImages: VisuallySimilarImage[]): number {
+	return ((10 - visuallySimilarImages.length) * 0.1)
+}
+
+function getTags(webEntities: WebEntity[]): string[] {
+	return webEntities.filter(we => we.score > 0.5)
+		.map(we => we.description);
+}
