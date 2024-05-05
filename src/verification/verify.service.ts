@@ -2,14 +2,12 @@
  * Data Model Interfaces
  */
 
-import type { VerifyReq, VerifyRes } from "./verify.interface";
+import type { VerifyRes } from "./verify.interface";
 
 /**
  * In-Memory Store
  */
 const verifyRes: VerifyRes = {
-	ipfsHash: "",
-	ipfsUrl: "https://img.freepik.com/free-vector/hand-drawn-nft-style-ape-illustration_23-2149611030.jpg",
 	uniqueness: 100,
 	metadata: {
 		modelVersion: "string",
@@ -124,7 +122,7 @@ const verifyRes: VerifyRes = {
  * Service Methods
  */
 
-export const verify = async (verifyReq: VerifyReq): Promise<VerifyRes> => {
-	const response = { ...verifyRes, ...verifyReq };
+export const verify = async (ipfsHash: string): Promise<VerifyRes> => {
+	const response = { ...verifyRes };
 	return response;
 };

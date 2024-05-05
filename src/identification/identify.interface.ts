@@ -1,8 +1,7 @@
-export interface IdentityReq {
-	ipfsHash: string;
-	ipfsUrl: string;
-}
-
-export interface IdentityRes extends IdentityReq {
-	metadata: object;
+export interface IdentityRes {
+	label: string,
+	bestGuessLabels: string[];
+	confidence: number;
+	uniqueness: number;
+	tags: string[];
 }

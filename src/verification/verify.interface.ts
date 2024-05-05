@@ -1,9 +1,4 @@
-export interface VerifyReq {
-	ipfsHash: string;
-	ipfsUrl: string;
-}
-
-export interface VerifyRes extends VerifyReq {
+export interface VerifyRes {
 	uniqueness: number;
 	metadata: object;
 }

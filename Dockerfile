@@ -10,6 +10,8 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm install
 
+ENV PORT=7000
+
 # Copy the rest of project files into this image
 COPY . .
 
