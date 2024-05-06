@@ -35,9 +35,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Jest | Test
+      - name: Node | Install
         run: |
-            npm run test
+            npm install
+
+      - name: Node | Test
+        run: |
+            npm test
 
       - name: Jest | Report Results
         uses: dorny/test-reporter@v1
