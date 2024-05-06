@@ -1,25 +1,42 @@
-# Use Node 16 alpine as parent image
-FROM node:22-alpine3.18
+# Use Node 22 & Alpine
+FROM node:22-alpine3.18 as base
 
-# Change the working directory on the Docker image to /app
-WORKDIR /app
+# Change directory to /usr/src/app
+WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the /app directory
-COPY package.json package-lock.json ./
+FROM base AS install
 
-# Install dependencies
-RUN npm install
+# Install dependencies including devDependencies from package-lock.json
+RUN mkdir -p /temp/dev
+COPY package.json package-lock.json /temp/dev/
+RUN cd /temp/dev && npm ci
+
+# Install dependencies from package-lock.json
+RUN mkdir -p /temp/prod
+COPY package.json package-lock.json /temp/prod/
+RUN cd /temp/prod && npm ci --omit=dev
+
+FROM base as prerelease
+
+# Copy dependencies & devDependencies from install stage
+COPY --from=install /temp/dev/node_modules node_modules
+COPY . .
+
+RUN npm run tsc
+
+FROM base AS release
+
+ENV NODE_ENV=production
+
+USER node
+
+COPY --chown=node:node --from=install /temp/prod/node_modules node_modules
+
+COPY --chown=node:node --from=prerelease /usr/src/app/build build
+COPY --chown=node:node --from=prerelease /usr/src/app/package.json .
+
+EXPOSE 7000
 
 ENV PORT=7000
 
-# Copy the rest of project files into this image
-COPY . .
-
-# Build the app
-RUN npm run tsc
-
-# Expose application port
-EXPOSE 7000
-
-# Start the application
-CMD npm start
+ENTRYPOINT [ "npm", "start" ]

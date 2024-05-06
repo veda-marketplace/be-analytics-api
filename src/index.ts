@@ -16,6 +16,7 @@ dotenv.config();
  */
 
 if (!process.env.PORT) {
+	console.error("Environment variable named PORT not found");
 	process.exit(1);
 }
 
@@ -36,6 +37,22 @@ app.use("/api/verify", verificationRouter);
  * Server Activation
  */
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
 	console.log(`Listening on port ${PORT}`);
 });
+
+/**
+ * Server Shutdown
+ */
+
+function shutDown() {
+	console.log("Shutting Server down gracefully");
+
+	server.close(() => {
+		console.log("Server closed");
+		process.exit(0);
+	});
+}
+
+process.on("SIGTERM", shutDown);
+process.on("SIGINT", shutDown);
