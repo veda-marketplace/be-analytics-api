@@ -15,12 +15,7 @@ dotenv.config();
  * App Variables
  */
 
-if (!process.env.PORT) {
-	console.error("Environment variable named PORT not found");
-	process.exit(1);
-}
-
-const PORT: number = Number.parseInt(process.env.PORT as string, 10);
+const PORT: number = Number.parseInt(process.env.PORT || "7000", 10);
 
 const app = express();
 /**

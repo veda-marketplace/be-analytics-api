@@ -37,6 +37,4 @@ COPY --chown=node:node --from=prerelease /usr/src/app/package.json .
 
 EXPOSE 7000
 
-ENV PORT=7000
-
 ENTRYPOINT [ "npm", "start" ]
