@@ -1,0 +1,21 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Forrmat & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git | Checkout
+        uses: actions/checkout@v4
+
+      - name: BiomeJS | Setup
+        uses: biomejs/setup-biome@v2
+      
+      - name: BiomeJS | Forrmat & Lint
+        run: biome ci .

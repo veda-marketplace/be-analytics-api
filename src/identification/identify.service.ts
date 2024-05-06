@@ -2,10 +2,17 @@
  * Data Model Interfaces
  */
 
-import type { IdentityRes } from "./identify.interface";
-import * as ImageSvc from '../shared/image.service';
+import type {
+	Annotations,
+	BestGuessLabel,
+	LabelAnnotation,
+	Response,
+	VisuallySimilarImage,
+	WebEntity,
+} from "../annotations/annotation.interfaces";
 import * as VisionSvc from "../annotations/annotation.service";
-import { Annotations, BestGuessLabel, LabelAnnotation, Response, VisuallySimilarImage, WebEntity } from '../annotations/annotation.interfaces';
+import * as ImageSvc from "../shared/image.service";
+import type { IdentityRes } from "./identify.interface";
 
 /**
  * Service Methods
@@ -17,8 +24,6 @@ export const identify = async (ipfsHash: string): Promise<IdentityRes> => {
 	return mapAnnotations(annotations);
 };
 
-
-
 function mapAnnotations(annotations: Annotations): IdentityRes {
 	const response: Response = annotations.responses[0];
 	return {
@@ -26,13 +31,13 @@ function mapAnnotations(annotations: Annotations): IdentityRes {
 		confidence: getBestScore(response.labelAnnotations),
 		bestGuessLabels: getBestGuessLabels(response.webDetection.bestGuessLabels),
 		tags: getTags(response.webDetection.webEntities),
-		uniqueness: getUniquenessScore(response.webDetection.visuallySimilarImages)
+		uniqueness: getUniquenessScore(response.webDetection.visuallySimilarImages),
 	};
 }
 
 function getBestScore(labelAnnotations: LabelAnnotation[]): number {
 	let score = 0;
-	for (let la of labelAnnotations) {
+	for (const la of labelAnnotations) {
 		if (score < la.score) {
 			score = la.score;
 		}
@@ -44,7 +49,7 @@ function getBestScore(labelAnnotations: LabelAnnotation[]): number {
 function getBestLabel(labelAnnotations: LabelAnnotation[]): string {
 	let score = 0;
 	let label = "";
-	for (let la of labelAnnotations) {
+	for (const la of labelAnnotations) {
 		if (score < la.score) {
 			score = la.score;
 			label = la.description;
@@ -54,14 +59,13 @@ function getBestLabel(labelAnnotations: LabelAnnotation[]): string {
 }
 
 function getBestGuessLabels(bestGuessLabels: BestGuessLabel[]): string[] {
-	return bestGuessLabels.map(bgl => bgl.label);
+	return bestGuessLabels.map((bgl) => bgl.label);
 }
 
 function getUniquenessScore(visuallySimilarImages: VisuallySimilarImage[]): number {
-	return ((10 - visuallySimilarImages.length) * 0.1)
+	return (10 - visuallySimilarImages.length) * 0.1;
 }
 
 function getTags(webEntities: WebEntity[]): string[] {
-	return webEntities.filter(we => we.score > 0.5)
-		.map(we => we.description);
+	return webEntities.filter((we) => we.score > 0.5).map((we) => we.description);
 }
