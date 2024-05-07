@@ -5,7 +5,7 @@
 import type { IdentityRes } from "./identify.interface";
 import * as ImageSvc from '../shared/image.service';
 import * as VisionSvc from "../annotations/annotation.service";
-import { Annotations, BestGuessLabel, LabelAnnotation, Response, VisuallySimilarImage, WebEntity } from '../annotations/annotation.interfaces';
+import type { Annotations, BestGuessLabel, LabelAnnotation, Response, VisuallySimilarImage, WebEntity } from '../annotations/annotation.interfaces';
 
 /**
  * Service Methods
@@ -32,7 +32,7 @@ function mapAnnotations(annotations: Annotations): IdentityRes {
 
 function getBestScore(labelAnnotations: LabelAnnotation[]): number {
 	let score = 0;
-	for (let la of labelAnnotations) {
+	for (const la of labelAnnotations) {
 		if (score < la.score) {
 			score = la.score;
 		}
@@ -44,7 +44,7 @@ function getBestScore(labelAnnotations: LabelAnnotation[]): number {
 function getBestLabel(labelAnnotations: LabelAnnotation[]): string {
 	let score = 0;
 	let label = "";
-	for (let la of labelAnnotations) {
+	for (const la of labelAnnotations) {
 		if (score < la.score) {
 			score = la.score;
 			label = la.description;
