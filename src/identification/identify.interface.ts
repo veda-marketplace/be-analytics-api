@@ -1,5 +1,5 @@
 export interface IdentityRes {
-	label: string,
+	label: string;
 	bestGuessLabels: string[];
 	confidence: number;
 	uniqueness: number;
