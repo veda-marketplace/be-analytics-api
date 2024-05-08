@@ -10,8 +10,9 @@ import type {
 	VisuallySimilarImage,
 	WebEntity,
 } from "../annotations/annotation.interfaces";
-import * as VisionSvc from "../annotations/annotation.service";
-import type { Annotations, BestGuessLabel, LabelAnnotation, Response, VisuallySimilarImage, WebEntity } from '../annotations/annotation.interfaces';
+import * as AnnotationSvc from "../annotations/annotation.service";
+import * as ImageSvc from "../shared/image.service";
+import type { IdentityRes } from "./identify.interface";
 
 /**
  * Service Methods
@@ -19,7 +20,7 @@ import type { Annotations, BestGuessLabel, LabelAnnotation, Response, VisuallySi
 
 export const identify = async (ipfsHash: string): Promise<IdentityRes> => {
 	const imageContent: string = await ImageSvc.downloadImageToBytes(`https://ipfs.io/ipfs/${ipfsHash}`);
-	const annotations: Annotations = await VisionSvc.annotate(imageContent);
+	const annotations: Annotations = await AnnotationSvc.annotate(imageContent);
 	return mapAnnotations(annotations);
 };
 
