@@ -29,7 +29,7 @@ function mapAnnotations(annotations: Annotations): IdentityRes {
 	return {
 		label: getBestLabel(response.labelAnnotations),
 		confidence: getBestScore(response.labelAnnotations),
-		bestGuessLabels: getBestGuessLabels(response.webDetection.bestGuessLabels),
+		bestGuessLabel: getBestGuessLabels(response.webDetection.bestGuessLabels),
 		tags: getTags(response.webDetection.webEntities),
 		uniqueness: getUniquenessScore(response.webDetection.visuallySimilarImages),
 	};
@@ -58,14 +58,24 @@ function getBestLabel(labelAnnotations: LabelAnnotation[]): string {
 	return label;
 }
 
-function getBestGuessLabels(bestGuessLabels: BestGuessLabel[]): string[] {
-	return bestGuessLabels.map((bgl) => bgl.label);
+function getBestGuessLabels(bestGuessLabels: BestGuessLabel[]): string {
+	if (bestGuessLabels.length > 0) {
+		return bestGuessLabels[0].label;
+	}
+	return "";
 }
 
 function getUniquenessScore(visuallySimilarImages: VisuallySimilarImage[]): number {
-	return (10 - visuallySimilarImages.length) * 0.1;
+	if (visuallySimilarImages.length > 0) {
+		return (10 - visuallySimilarImages.length) * 0.1;
+	}
+
+	return 1;
 }
 
-function getTags(webEntities: WebEntity[]): string[] {
-	return webEntities.filter((we) => we.score > 0.5).map((we) => we.description);
+function getTags(webEntities: WebEntity[]): string {
+	return webEntities
+		.filter((we) => we.score > 0.5)
+		.map((we) => we.description)
+		.reduce((p, c) => `${p},${c}`);
 }
