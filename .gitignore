@@ -133,3 +133,5 @@ build
 
 # jest-junit
 junit.xml
+
+.history
